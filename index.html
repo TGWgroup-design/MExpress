@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M.Express Claim Flow</title>
+<meta name="description" content="An interactive walkthrough of a vehicle deposit claim moving between the car hire partner, M.Express and the client.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='80'%3E%F0%9F%94%91%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#F6F7F2;
+    --surface:#FFFFFF;
+    --surface-2:#EEF1EC;
+    --ink:#10231F;
+    --ink-soft:#4B5C54;
+    --ink-faint:#7C8B86;
+    --line:#D8DED7;
+    --teal-700:#0E5A4A;
+    --teal-600:#146E59;
+    --teal-500:#1C8C73;
+    --teal-100:#DCEEE7;
+    --amber-600:#B5680B;
+    --amber-100:#F7E6CF;
+    --red-600:#B23A2E;
+    --red-100:#F6DCD8;
+    --shadow: 0 1px 2px rgba(16,35,31,.06), 0 8px 24px -16px rgba(16,35,31,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1613;
+      --surface:#122420;
+      --surface-2:#16302A;
+      --ink:#EAF2EE;
+      --ink-soft:#A9BDB5;
+      --ink-faint:#7E958C;
+      --line:#24403A;
+      --teal-700:#3FCBA6;
+      --teal-600:#37B795;
+      --teal-500:#49CDA8;
+      --teal-100:rgba(73,205,168,.14);
+      --amber-600:#E3A33D;
+      --amber-100:rgba(227,163,61,.16);
+      --red-600:#E2685A;
+      --red-100:rgba(226,104,90,.16);
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1613;
+    --surface:#122420;
+    --surface-2:#16302A;
+    --ink:#EAF2EE;
+    --ink-soft:#A9BDB5;
+    --ink-faint:#7E958C;
+    --line:#24403A;
+    --teal-700:#3FCBA6;
+    --teal-600:#37B795;
+    --teal-500:#49CDA8;
+    --teal-100:rgba(73,205,168,.14);
+    --amber-600:#E3A33D;
+    --amber-100:rgba(227,163,61,.16);
+    --red-600:#E2685A;
+    --red-100:rgba(226,104,90,.16);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Public Sans", system-ui, -apple-system, sans-serif;
+    font-size:14px;
+    line-height:1.5;
+  }
+  .shell{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 24px 64px;
+  }
+
+  /* ---------- header ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .mark{
+    font-family:"Archivo", sans-serif;
+    font-weight:800;
+    font-size:19px;
+    letter-spacing:.01em;
+    color:var(--teal-700);
+  }
+  .brand .sub{
+    font-size:12.5px;
+    color:var(--ink-faint);
+  }
+  .reset-link{
+    appearance:none;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink-soft);
+    font:500 12.5px "Public Sans", sans-serif;
+    padding:7px 12px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .reset-link:hover{ border-color:var(--teal-500); color:var(--teal-700); }
+  .reset-link:focus-visible{ outline:2px solid var(--teal-500); outline-offset:2px; }
+
+  .role-tabs{
+    display:flex;
+    gap:4px;
+    background:var(--surface-2);
+    padding:4px;
+    border-radius:10px;
+    margin-bottom:20px;
+    width:fit-content;
+  }
+  .role-tab{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    font:600 13px "Public Sans", sans-serif;
+    padding:9px 16px;
+    border-radius:7px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    white-space:nowrap;
+  }
+  .role-tab .dot{ width:7px; height:7px; border-radius:50%; background:var(--ink-faint); flex:none; }
+  .role-tab.active{ background:var(--surface); color:var(--teal-700); box-shadow:var(--shadow); }
+  .role-tab.active .dot{ background:var(--teal-500); }
+  .role-tab:focus-visible{ outline:2px solid var(--teal-500); outline-offset:2px; }
+  .role-tab .you{
+    font:600 9.5px "Public Sans", sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--teal-700);
+    background:var(--teal-100);
+    padding:2px 6px;
+    border-radius:99px;
+  }
+
+  /* ---------- stepper ---------- */
+  .stepper{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:20px;
+    box-shadow:var(--shadow);
+  }
+  .stepper ol{
+    list-style:none;
+    margin:0; padding:0;
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:4px;
+  }
+  .step{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+  .step .track{ display:flex; align-items:center; gap:4px; }
+  .step .node{
+    width:22px; height:22px; border-radius:50%;
+    border:2px solid var(--line);
+    background:var(--surface);
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+    font:700 11px "Archivo", sans-serif;
+    color:var(--ink-faint);
+  }
+  .step .bar{ height:2px; background:var(--line); flex:1; }
+  .step:first-child .track{ margin-left:0; }
+  .step.done .node{ background:var(--teal-500); border-color:var(--teal-500); color:#fff; }
+  .step.done .bar{ background:var(--teal-500); }
+  .step.current .node{ border-color:var(--amber-600); color:var(--amber-600); background:var(--amber-100); }
+  .step .label{ font:600 11.5px "Public Sans", sans-serif; color:var(--ink-soft); }
+  .step.current .label{ color:var(--amber-600); }
+  .step.done .label{ color:var(--teal-700); }
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 320px;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 760px){
+    .layout{ grid-template-columns:1fr; }
+    .stepper ol{ grid-template-columns:repeat(4,1fr); row-gap:16px; }
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px;
+    box-shadow:var(--shadow);
+  }
+  .panel-eyebrow{
+    font:700 11px "Archivo", sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--teal-700);
+    margin:0 0 6px;
+  }
+  .panel h2{
+    font-family:"Archivo", sans-serif;
+    font-weight:700;
+    font-size:21px;
+    margin:0 0 4px;
+    text-wrap:balance;
+  }
+  .panel .deck{ color:var(--ink-soft); margin:0 0 20px; max-width:62ch; }
+
+  .waiting{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 18px;
+  }
+  .waiting .ico{
+    width:30px;height:30px;border-radius:50%;
+    background:var(--amber-100); color:var(--amber-600);
+    display:flex;align-items:center;justify-content:center;flex:none;
+    font:700 13px "Archivo",sans-serif;
+  }
+  .waiting strong{ color:var(--ink); }
+  .waiting p{ margin:2px 0 0; color:var(--ink-soft); }
+  .waiting.done .ico{ background:var(--teal-100); color:var(--teal-700); }
+
+  .field-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 20px;
+    margin:18px 0;
+  }
+  .field{ min-width:0; }
+  .field .k{ font:600 11px "Public Sans",sans-serif; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); margin:0 0 3px; }
+  .field .v{ font:500 14px "Public Sans",sans-serif; color:var(--ink); overflow-wrap:break-word; }
+  .field .v.mono{ font-family:"IBM Plex Mono", monospace; font-variant-numeric:tabular-nums; }
+  .field .v.strong{ color:var(--teal-700); font-weight:700; }
+
+  .checklist{ list-style:none; margin:0 0 20px; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .checklist li{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink-soft); }
+  .checklist .tick{ width:18px;height:18px;border-radius:50%; background:var(--teal-100); color:var(--teal-700); flex:none; display:flex;align-items:center;justify-content:center; font-size:11px; font-weight:700; }
+
+  .scenario-row{ display:flex; gap:10px; margin:4px 0 18px; flex-wrap:wrap; }
+  .scenario-btn{
+    appearance:none; cursor:pointer; text-align:left;
+    border:1.5px solid var(--line); background:var(--surface);
+    border-radius:10px; padding:13px 15px; flex:1; min-width:200px;
+    font-family:"Public Sans",sans-serif;
+  }
+  .scenario-btn .t{ font-weight:700; font-size:13.5px; color:var(--ink); display:block; margin-bottom:2px; }
+  .scenario-btn .d{ font-size:12px; color:var(--ink-faint); }
+  .scenario-btn.active{ border-color:var(--teal-500); background:var(--teal-100); }
+  .scenario-btn.active .t{ color:var(--teal-700); }
+  .scenario-btn:focus-visible{ outline:2px solid var(--teal-500); outline-offset:2px; }
+
+  .deduction-list{ list-style:none; margin:0 0 18px; padding:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .deduction-list li{ display:flex; justify-content:space-between; padding:10px 14px; font-size:13px; }
+  .deduction-list li + li{ border-top:1px solid var(--line); }
+  .deduction-list .amt{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; }
+  .deduction-list li.total{ background:var(--surface-2); font-weight:700; }
+
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    background:var(--teal-600); color:#fff;
+    font:700 13.5px "Public Sans",sans-serif;
+    padding:12px 20px; border-radius:9px;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn:hover{ background:var(--teal-700); }
+  .btn:focus-visible{ outline:2px solid var(--teal-500); outline-offset:2px; }
+  .btn .arrow{ font-size:15px; }
+  .btn.ghost{ background:transparent; border:1.5px solid var(--line); color:var(--ink); }
+  .btn.ghost:hover{ border-color:var(--teal-500); color:var(--teal-700); background:transparent; }
+
+  .notice{
+    display:flex; gap:10px; align-items:flex-start;
+    border-radius:10px; padding:14px 16px; margin:0 0 18px;
+    font-size:13px;
+  }
+  .notice.warn{ background:var(--amber-100); color:var(--amber-600); }
+  .notice.danger{ background:var(--red-100); color:var(--red-600); }
+  .notice.good{ background:var(--teal-100); color:var(--teal-700); }
+  .notice strong{ color:inherit; }
+  .notice p{ margin:2px 0 0; color:var(--ink-soft); }
+
+  /* ---------- ledger sidebar ---------- */
+  .ledger{ position:sticky; top:20px; }
+  .ledger .status-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font:700 11px "Archivo",sans-serif; text-transform:uppercase; letter-spacing:.06em;
+    padding:5px 10px; border-radius:99px; margin-bottom:14px;
+  }
+  .ledger .status-pill .dot{ width:6px;height:6px;border-radius:50%; background:currentColor; }
+  .pill-neutral{ background:var(--surface-2); color:var(--ink-faint); }
+  .pill-progress{ background:var(--amber-100); color:var(--amber-600); }
+  .pill-good{ background:var(--teal-100); color:var(--teal-700); }
+  .pill-danger{ background:var(--red-100); color:var(--red-600); }
+
+  .ledger h3{ font-family:"Archivo",sans-serif; font-size:13px; margin:0 0 2px; }
+  .ledger .claimno{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-faint); margin:0 0 16px; }
+
+  .ledger-rows{ display:flex; flex-direction:column; }
+  .lrow{ display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px; }
+  .lrow:last-child{ border-bottom:none; }
+  .lrow .k{ color:var(--ink-soft); }
+  .lrow .v{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-weight:600; color:var(--ink); text-align:right; }
+  .lrow.sub .k{ padding-left:12px; color:var(--ink-faint); }
+  .lrow.highlight .v{ color:var(--teal-700); }
+  .lrow.danger .v{ color:var(--red-600); }
+  .lrow.total{ margin-top:4px; padding-top:12px; border-top:1.5px solid var(--ink); }
+  .lrow.total .k, .lrow.total .v{ font-weight:700; color:var(--ink); }
+
+  .ledger-meta{ margin-top:16px; padding-top:14px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:7px; }
+  .ledger-meta .mrow{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-faint); }
+  .ledger-meta .mrow .v{ color:var(--ink-soft); font-weight:500; }
+
+  .foot-note{ margin-top:22px; font-size:12px; color:var(--ink-faint); max-width:70ch; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark">M.Express</span>
+      <span class="sub">Claim flow &mdash; interactive demo</span>
+    </div>
+    <button class="reset-link" id="resetBtn" type="button">&#8635; Reset demo</button>
+  </div>
+
+  <div class="role-tabs" id="roleTabs"></div>
+
+  <div class="stepper">
+    <ol id="stepperList"></ol>
+  </div>
+
+  <div class="layout">
+    <div class="panel" id="mainPanel"></div>
+    <aside class="ledger panel" id="ledgerPanel"></aside>
+  </div>
+
+  <p class="foot-note">Demo data only &mdash; Lindiwe Dlamini, Avis Fleet Services and the figures below are illustrative. Switch between the three tabs above to see what each party does and sees at each stage of the same claim.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var ORDER = ["draft","submitted","verified","accepted","paid","acknowledged","returned","pack_sent","reimbursed","settled"];
+  var idx = function(s){ return ORDER.indexOf(s); };
+
+  var NEXT_ACTOR = {
+    draft:        { actor:"avis",     label:"Submit the claim" },
+    submitted:    { actor:"mexpress", label:"Verify claim &amp; bank details" },
+    verified:     { actor:"client",   label:"Accept the 5% fee &amp; advance terms" },
+    accepted:     { actor:"mexpress", label:"Release payment to client" },
+    paid:         { actor:"client",   label:"Confirm receipt" },
+    acknowledged: { actor:"avis",     label:"Record vehicle return &amp; assess deductions" },
+    returned:     { actor:"mexpress", label:"Send reimbursement pack to partner" },
+    pack_sent:    { actor:"avis",     label:"Confirm reimbursement sent" },
+    reimbursed:   { actor:"mexpress", label:"Reconcile &amp; mark claim settled" },
+    settled:      { actor:null,       label:"Claim closed" }
+  };
+
+  var ROLE_NAMES = { avis:"Avis Fleet Services", mexpress:"M.Express", client:"Lindiwe Dlamini" };
+  var ROLE_SHORT = { avis:"Avis Portal", mexpress:"M.Express Dashboard", client:"Client App" };
+
+  var claim = {
+    number: null,
+    clientName: "Lindiwe Dlamini",
+    idNumber: "8905•• •••• 08 1",
+    bank: "FNB •••• 4471",
+    hireAgreement: "AVIS-CT-204891",
+    branch: "Cape Town International Airport",
+    vehicle: "VW Polo Vivo · CA 884-112",
+    hireDates: "3 – 10 Oct 2026",
+    deposit: 8000,
+    feeRate: 0.05,
+    deductions: 0,
+    deductionItems: [],
+    scenario: null,
+    stage: "draft",
+    shortfallPaid: false
+  };
+
+  var role = "avis";
+  var claimCounter = 4871;
+
+  function money(n){
+    var fixed = Math.abs(n).toFixed(2);
+    var parts = fixed.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return (n < 0 ? "−R " : "R ") + parts[0] + "." + parts[1];
+  }
+
+  function fee(){ return claim.deposit * claim.feeRate; }
+  function clientPayout(){ return claim.deposit - fee(); }
+  function finalAmount(){ return claim.deposit - claim.deductions; }
+  function reimbursementDue(){ return idx(claim.stage) >= idx("returned") ? finalAmount() : claim.deposit; }
+  function shortfall(){ return idx(claim.stage) >= idx("returned") ? claim.deductions : 0; }
+
+  function setStage(s){ claim.stage = s; render(); }
+  function setRole(r){ role = r; render(); }
+
+  function reset(){
+    claim.number = null;
+    claim.deductions = 0;
+    claim.deductionItems = [];
+    claim.scenario = null;
+    claim.stage = "draft";
+    claim.shortfallPaid = false;
+    role = "avis";
+    render();
+  }
+
+  // ---------- stepper ----------
+  var STEP_DEFS = [
+    { label:"Submitted",   threshold: idx("submitted") },
+    { label:"Verified & accepted", threshold: idx("accepted") },
+    { label:"Client paid", threshold: idx("acknowledged") },
+    { label:"Vehicle returned", threshold: idx("returned") },
+    { label:"Reimbursement due", threshold: idx("pack_sent") },
+    { label:"Reimbursed", threshold: idx("reimbursed") },
+    { label:"Settled", threshold: idx("settled") }
+  ];
+
+  function renderStepper(){
+    var cur = idx(claim.stage);
+    var html = "";
+    var currentAssigned = false;
+    STEP_DEFS.forEach(function(step, i){
+      var done = cur >= step.threshold;
+      var isCurrent = !done && !currentAssigned;
+      if (isCurrent) currentAssigned = true;
+      var cls = done ? "done" : (isCurrent ? "current" : "");
+      html += '<li class="step ' + cls + '">' +
+        '<div class="track">' +
+          (i > 0 ? '<div class="bar"></div>' : '') +
+          '<div class="node">' + (done ? "&#10003;" : (i+1)) + '</div>' +
+          (i < STEP_DEFS.length - 1 ? '<div class="bar"></div>' : '<div style="flex:1"></div>') +
+        '</div>' +
+        '<div class="label">' + step.label + '</div>' +
+      '</li>';
+    });
+    document.getElementById("stepperList").innerHTML = html;
+  }
+
+  // ---------- role tabs ----------
+  function renderTabs(){
+    var order = ["avis","mexpress","client"];
+    var html = order.map(function(r){
+      var next = NEXT_ACTOR[claim.stage].actor;
+      var active = r === role;
+      var waiting = next === r && claim.stage !== "settled";
+      return '<button type="button" class="role-tab ' + (active ? "active" : "") + '" data-role="' + r + '">' +
+        '<span class="dot"></span>' + ROLE_SHORT[r] +
+        (waiting ? '<span class="you">up next</span>' : "") +
+      '</button>';
+    }).join("");
+    document.getElementById("roleTabs").innerHTML = html;
+    Array.prototype.forEach.call(document.querySelectorAll(".role-tab"), function(btn){
+      btn.addEventListener("click", function(){ setRole(btn.getAttribute("data-role")); });
+    });
+  }
+
+  // ---------- ledger ----------
+  function pillClass(){
+    if (claim.stage === "settled") return shortfall() > 0 && !claim.shortfallPaid ? "pill-danger" : "pill-good";
+    if (claim.stage === "draft") return "pill-neutral";
+    return "pill-progress";
+  }
+  function pillLabel(){
+    if (claim.stage === "draft") return "Not submitted";
+    if (claim.stage === "settled") return "Settled";
+    return "In progress";
+  }
+
+  function renderLedger(){
+    var started = claim.stage !== "draft";
+    var returned = idx(claim.stage) >= idx("returned");
+    var rows = "";
+
+    rows += row("Deposit held", started ? money(claim.deposit) : "—");
+    rows += row("Provisional amount", started ? money(claim.deposit) : "—");
+    rows += row("M.Express fee (5%)", started ? money(fee()) : "—", "sub");
+    rows += row("Paid to client", started ? money(clientPayout()) : "—", "highlight");
+
+    if (returned){
+      rows += row("Deductions confirmed", money(claim.deductions), claim.deductions > 0 ? "danger" : "");
+      rows += row("Final approved amount", money(finalAmount()), "highlight");
+    }
+
+    rows += '<div class="lrow total"><span class="k">Reimbursement due</span><span class="v">' + (started ? money(reimbursementDue()) : "—") + '</span></div>';
+
+    if (returned && shortfall() > 0){
+      rows += row("Shortfall owed by client", (claim.shortfallPaid ? money(0) : money(shortfall())), claim.shortfallPaid ? "" : "danger");
+    }
+
+    document.getElementById("ledgerPanel").innerHTML =
+      '<span class="status-pill ' + pillClass() + '"><span class="dot"></span>' + pillLabel() + '</span>' +
+      '<h3>Claim ledger</h3>' +
+      '<p class="claimno">' + (claim.number ? claim.number : "Not yet issued") + '</p>' +
+      '<div class="ledger-rows">' + rows + '</div>' +
+      '<div class="ledger-meta">' +
+        meta("Client", claim.clientName) +
+        meta("Partner", "Avis Fleet Services") +
+        meta("Hire agreement", claim.hireAgreement) +
+        meta("Vehicle", claim.vehicle) +
+      '</div>';
+  }
+  function row(k,v,cls){ return '<div class="lrow ' + (cls||"") + '"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; }
+  function meta(k,v){ return '<div class="mrow"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; }
+
+  // ---------- main panel per role ----------
+  function waitingBlock(forRole){
+    var next = NEXT_ACTOR[claim.stage];
+    if (claim.stage === "settled"){
+      return '<div class="waiting done"><div class="ico">&#10003;</div><div><strong>Claim closed.</strong><p>Nothing further is owed on this claim' + (shortfall() > 0 && !claim.shortfallPaid ? " beyond the client's outstanding shortfall." : ".") + '</p></div></div>';
+    }
+    if (next.actor === forRole) return "";
+    return '<div class="waiting"><div class="ico">&#8230;</div><div><strong>Waiting on ' + ROLE_NAMES[next.actor] + '.</strong><p>' + next.label.replace(/&amp;/g,"&") + '</p></div></div>';
+  }
+
+  function renderMain(){
+    var el = document.getElementById("mainPanel");
+    if (role === "avis") return renderAvis(el);
+    if (role === "mexpress") return renderMexpress(el);
+    return renderClient(el);
+  }
+
+  function renderAvis(el){
+    if (claim.stage === "draft"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">Avis Portal</p>' +
+        '<h2>Submit a deposit claim</h2>' +
+        '<p class="deck">Vehicle returned to the Cape Town International Airport branch. Confirm the client and deposit details, then submit to M.Express for the advance.</p>' +
+        '<div class="field-grid">' +
+          field("Client", claim.clientName) +
+          field("ID number", claim.idNumber, true) +
+          field("Hire agreement", claim.hireAgreement, true) +
+          field("Hire dates", claim.hireDates) +
+          field("Vehicle", claim.vehicle) +
+          field("Deposit held", money(claim.deposit), true) +
+        '</div>' +
+        '<button class="btn" id="actionBtn" type="button">Submit claim to M.Express <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){
+        claim.number = "MX-2026-" + (claimCounter++);
+        setStage("submitted");
+      });
+      return;
+    }
+
+    if (claim.stage === "acknowledged"){
+      var clean = claim.scenario === "clean";
+      var dirty = claim.scenario === "deductions";
+      el.innerHTML =
+        '<p class="panel-eyebrow">Avis Portal</p>' +
+        '<h2>Vehicle returned &mdash; assess final amount</h2>' +
+        '<p class="deck">Client has confirmed receipt of the advance. Record what, if anything, needs to be deducted from the deposit before the final figure goes to M.Express.</p>' +
+        '<div class="scenario-row">' +
+          '<button type="button" class="scenario-btn ' + (clean?"active":"") + '" data-sc="clean"><span class="t">Clean return</span><span class="d">No tolls, fines or damage found</span></button>' +
+          '<button type="button" class="scenario-btn ' + (dirty?"active":"") + '" data-sc="deductions"><span class="t">Deductions found</span><span class="d">E-tags, a fine and a cleaning charge</span></button>' +
+        '</div>' +
+        (dirty ? deductionList() : "") +
+        '<button class="btn" id="actionBtn" type="button" ' + (claim.scenario ? "" : "disabled") + '>Confirm final amount &amp; notify M.Express <span class="arrow">&rarr;</span></button>';
+      Array.prototype.forEach.call(el.querySelectorAll(".scenario-btn"), function(btn){
+        btn.addEventListener("click", function(){
+          claim.scenario = btn.getAttribute("data-sc");
+          if (claim.scenario === "clean"){ claim.deductions = 0; claim.deductionItems = []; }
+          else {
+            claim.deductionItems = [
+              { label:"Outstanding e-tags (2x N2 toll gantries)", amount:120 },
+              { label:"Speed infringement, N1 Huguenot", amount:480 },
+              { label:"Valet &amp; cleaning charge", amount:150 }
+            ];
+            claim.deductions = 750;
+          }
+          render();
+        });
+      });
+      bind("actionBtn", function(){ if (claim.scenario) setStage("returned"); });
+      return;
+    }
+
+    if (claim.stage === "pack_sent"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">Avis Portal</p>' +
+        '<h2>Reimbursement pack received</h2>' +
+        '<p class="deck">M.Express has sent proof of payment, the client’s acknowledgment and the amount due. Reimburse the full confirmed amount and mark it sent.</p>' +
+        '<div class="field-grid">' +
+          field("Claim", claim.number, true) +
+          field("Amount due", money(reimbursementDue()), true) +
+          field("Due date", "7 days from issue") +
+          field("Reference", "REIM-" + claim.number.slice(-4)) +
+        '</div>' +
+        '<button class="btn" id="actionBtn" type="button">Confirm reimbursement sent <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){ setStage("reimbursed"); });
+      return;
+    }
+
+    el.innerHTML =
+      '<p class="panel-eyebrow">Avis Portal</p>' +
+      '<h2>Claim ' + (claim.number || "") + '</h2>' +
+      '<p class="deck">What the Avis branch sees while this claim moves through M.Express and the client.</p>' +
+      waitingBlock("avis");
+  }
+
+  function renderMexpress(el){
+    if (claim.stage === "submitted"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">M.Express Dashboard</p>' +
+        '<h2>Verify claim ' + claim.number + '</h2>' +
+        '<p class="deck">Run the standard checks before any client terms go out.</p>' +
+        '<ul class="checklist">' +
+          check("Client identity matches hire agreement") +
+          check("Bank account ownership confirmed") +
+          check("No duplicate claim on this deposit reference") +
+          check("Avis Fleet Services within its exposure limit") +
+        '</ul>' +
+        '<button class="btn" id="actionBtn" type="button">Verify &amp; request client acceptance <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){ setStage("verified"); });
+      return;
+    }
+
+    if (claim.stage === "accepted"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">M.Express Dashboard</p>' +
+        '<h2>Release payment</h2>' +
+        '<p class="deck">Client has accepted the fee and advance terms. Pay out 95% of the provisional amount.</p>' +
+        '<div class="field-grid">' +
+          field("Provisional amount", money(claim.deposit), true) +
+          field("Fee (5%)", money(fee())) +
+          field("Net payout", money(clientPayout()), true) +
+          field("Destination", claim.bank) +
+        '</div>' +
+        '<button class="btn" id="actionBtn" type="button">Release payment to client <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){ setStage("paid"); });
+      return;
+    }
+
+    if (claim.stage === "returned"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">M.Express Dashboard</p>' +
+        '<h2>Issue reimbursement pack</h2>' +
+        '<p class="deck">Avis has confirmed the final amount. Package the proof of payment, client acknowledgment and amount due.</p>' +
+        '<div class="field-grid">' +
+          field("Provisional amount", money(claim.deposit)) +
+          field("Deductions", money(claim.deductions), claim.deductions>0) +
+          field("Final approved amount", money(finalAmount()), true) +
+          field("Reimbursement due from Avis", money(reimbursementDue()), true) +
+        '</div>' +
+        (shortfall() > 0 ? '<div class="notice warn"><span>&#9888;</span><div><strong>Client shortfall of ' + money(shortfall()) + '.</strong><p>A shortfall notice will be issued to ' + claim.clientName + ' once this pack is sent.</p></div></div>' : "") +
+        '<button class="btn" id="actionBtn" type="button">Send reimbursement pack to Avis <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){ setStage("pack_sent"); });
+      return;
+    }
+
+    if (claim.stage === "reimbursed"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">M.Express Dashboard</p>' +
+        '<h2>Reconcile claim ' + claim.number + '</h2>' +
+        '<p class="deck">Avis’s reimbursement has been matched to this claim. Close it out.</p>' +
+        '<div class="field-grid">' +
+          field("Reimbursement received", money(reimbursementDue()), true) +
+          field("Matched to", claim.number, true) +
+        '</div>' +
+        '<button class="btn" id="actionBtn" type="button">Reconcile &amp; mark settled <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){ setStage("settled"); });
+      return;
+    }
+
+    el.innerHTML =
+      '<p class="panel-eyebrow">M.Express Dashboard</p>' +
+      '<h2>Claim ' + (claim.number || "—") + '</h2>' +
+      '<p class="deck">The M.Express operations view of this claim.</p>' +
+      waitingBlock("mexpress");
+  }
+
+  function renderClient(el){
+    if (claim.stage === "verified"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">Client App</p>' +
+        '<h2>Your deposit advance</h2>' +
+        '<p class="deck">M.Express has verified your claim with Avis Fleet Services. Review the terms before your payout is released.</p>' +
+        '<div class="field-grid">' +
+          field("Deposit held by Avis", money(claim.deposit), true) +
+          field("M.Express fee (5%)", money(fee())) +
+          field("You receive now", money(clientPayout()), true) +
+        '</div>' +
+        '<div class="notice warn"><span>&#9888;</span><div><strong>If Avis later confirms tolls, fines or damage</strong><p>the difference is deducted from your R' + claim.deposit.toLocaleString() + ' deposit and billed to you — it is not an extra M.Express fee.</p></div></div>' +
+        '<button class="btn" id="actionBtn" type="button">Accept terms <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){ setStage("accepted"); });
+      return;
+    }
+
+    if (claim.stage === "paid"){
+      el.innerHTML =
+        '<p class="panel-eyebrow">Client App</p>' +
+        '<h2>Payment sent</h2>' +
+        '<p class="deck">' + money(clientPayout()) + ' has been paid to your account ending ' + claim.bank.slice(-4) + '. Confirm you’ve received it.</p>' +
+        '<div class="field-grid">' +
+          field("Amount received", money(clientPayout()), true) +
+          field("Reference", claim.number) +
+        '</div>' +
+        '<button class="btn" id="actionBtn" type="button">Confirm receipt <span class="arrow">&rarr;</span></button>';
+      bind("actionBtn", function(){ setStage("acknowledged"); });
+      return;
+    }
+
+    if (idx(claim.stage) >= idx("returned") && shortfall() > 0 && !claim.shortfallPaid){
+      el.innerHTML =
+        '<p class="panel-eyebrow">Client App</p>' +
+        '<h2>Shortfall notice</h2>' +
+        '<p class="deck">Avis confirmed charges against your deposit after your vehicle was returned.</p>' +
+        deductionList() +
+        '<div class="notice danger"><span>&#9888;</span><div><strong>You owe ' + money(shortfall()) + '.</strong><p>Your advance was based on the full deposit. These are deductions Avis confirmed after return, which were never part of your refund.</p></div></div>' +
+        '<button class="btn" id="actionBtn" type="button">Pay shortfall <span class="arrow">&rarr;</span></button>' +
+        waitingBlock("client");
+      bind("actionBtn", function(){ claim.shortfallPaid = true; render(); });
+      return;
+    }
+
+    el.innerHTML =
+      '<p class="panel-eyebrow">Client App</p>' +
+      '<h2>Claim status</h2>' +
+      '<p class="deck">What you see while your deposit claim is in progress.</p>' +
+      waitingBlock("client");
+  }
+
+  function deductionList(){
+    var html = '<ul class="deduction-list">';
+    claim.deductionItems.forEach(function(it){
+      html += '<li><span>' + it.label + '</span><span class="amt">' + money(it.amount) + '</span></li>';
+    });
+    html += '<li class="total"><span>Total deducted</span><span class="amt">' + money(claim.deductions) + '</span></li>';
+    html += '</ul>';
+    return html;
+  }
+
+  function field(k, v, strong){
+    return '<div class="field"><div class="k">' + k + '</div><div class="v mono' + (strong ? " strong" : "") + '">' + v + '</div></div>';
+  }
+  function check(label){
+    return '<li><span class="tick">&#10003;</span>' + label + '</li>';
+  }
+  function bind(id, fn){
+    var el = document.getElementById(id);
+    if (el) el.addEventListener("click", fn);
+  }
+
+  function render(){
+    renderTabs();
+    renderStepper();
+    renderLedger();
+    renderMain();
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", reset);
+  render();
+})();
+</script>
+</body>
+</html>
