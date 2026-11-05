@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>M.Express Car Hire Partner Integration</title>
+<style>
+  @page { size: Letter; margin: 54px 50px 60px; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size:11.5px;
+    line-height:1.55;
+    color:#1b2420;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1,h2{ font-family: Georgia, "Times New Roman", serif; color:#0E5A4A; margin:0 0 6px; font-weight:400; }
+  h1{ font-size:30px; margin-top:4px; }
+  h2{ font-size:19px; margin-top:0; }
+  .runhead{ font-size:9px; letter-spacing:.04em; color:#8b968f; margin-bottom:10px; text-transform:uppercase; }
+  .byline{ font-size:11px; color:#4b5c54; margin:2px 0 14px; }
+  .pill{ display:inline-block; background:#eef1ec; color:#4b5c54; border-radius:9999px; padding:2px 9px; font-size:10.5px; }
+  .prepared{ font-size:11px; color:#4b5c54; margin:0 0 20px; }
+  p{ margin:0 0 11px; max-width:620px; }
+  strong{ font-weight:700; }
+  em{ font-style:italic; }
+  .sec{ padding-top:2px; }
+  .sec + .sec{ page-break-before: always; }
+  table{ border-collapse:collapse; width:100%; margin:4px 0 16px; font-size:11px; }
+  th,td{ border:1px solid #e3e1d9; padding:8px 10px; text-align:left; vertical-align:top; }
+  th{ background:#f3f1ec; color:#4b5c54; font-weight:600; font-size:10.5px; }
+  ul,ol{ margin:0 0 12px; padding-left:20px; max-width:600px; }
+  li{ margin-bottom:5px; }
+  .footer{
+    position:fixed; bottom:18px; left:50px; right:50px;
+    font-size:9px; color:#9aa29d; letter-spacing:.03em;
+  }
+  svg{ display:block; margin:6px 0 4px; }
+  .cap{ font-size:10.5px; color:#8b968f; margin:0 0 14px; }
+</style>
+</head>
+<body>
+
+<div class="footer"><span>M.EXPRESS</span></div>
+
+<section class="sec">
+  <h1>M.EXPRESS</h1>
+  <h2 style="font-size:16px;margin-bottom:10px;">CAR HIRE PARTNER PAYMENT INTEGRATION</h2>
+  <p class="byline">Processes and policies | <span class="pill">Nov 5, 2026</span></p>
+  <p class="prepared">Prepared by TGW Group for M.Express</p>
+
+  <h2>Purpose and scope</h2>
+  <p>This framework extends the existing M.Express deposit payout and reimbursement model to vehicle hire deposits specifically: bookings with Telegenix, Europcar, Hertz, First Car Rental and similar asset partners, where a refundable security or damage deposit is held against the hire.</p>
+  <p>It covers the roles of the three parties, the payment and data integration between M.Express and each car hire company, the policies for onboarding a hire company as a partner, and the controls that keep the client advance, the final approved refund and the reimbursement from M.Express in step with each other.</p>
+  <p>It does not cover the hire agreement itself, vehicle insurance, or the deposit amount set by the hire company &ndash; those stay the car hire company&rsquo;s terms. It assumes the legal and regulatory classification work in the existing South Africa requirements and compliance checklist runs in parallel, since this product sits inside that same classification question.</p>
+  <p><strong>Key difference from the base model:</strong> a vehicle hire deposit is frequently not refunded in full. Fuel, tolls, e-tags and traffic fines (which can arrive weeks after return) routinely reduce the amount the hire company ultimately approves. M.Express often advances against a figure that is not yet final &ndash; this framework exists to manage that gap.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Parties and roles</h2>
+  <table>
+    <tr><th>Party</th><th>Role</th><th>Primary obligation</th></tr>
+    <tr><td>Hiring client</td><td>Books and returns the vehicle; receives the deposit advance</td><td>Accept the 5% fee and advance terms; keep bank details and ID current</td></tr>
+    <tr><td>Car hire company (asset partner)</td><td>Holds the deposit; approves the final refundable amount; reimburses M.Express</td><td>Confirm claims accurately, assess deductions promptly, reimburse in full by the due date</td></tr>
+    <tr><td>M.Express</td><td>Advances the client&rsquo;s deposit; carries the reimbursement exposure until settled</td><td>Verify claims and identities, pay the client, pursue reimbursement, reconcile</td></tr>
+  </table>
+  <p>M.Express sits between the two other parties on every transaction: it never advances a deposit without a claim and commitment on record from the car hire company, and it never pays the client before that commitment is captured.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Commercial model for vehicle hire deposits</h2>
+  <p>The fee and payout mechanics follow the standard M.Express model: the client pays a 5% fee, and the car hire company reimburses the full amount paid out, with no extra fee to the partner.</p>
+  <p>The difference in vehicle hire is <em>when</em> the approved amount is known. A generic refund is a fixed, pre-confirmed figure. A vehicle hire deposit clears in two stages: a provisional approval at return (visible damage only &ndash; tolls, e-tags and fines can still arrive later), then a final approval 14-30 days later once charges are reconciled.</p>
+  <table>
+    <tr><th>Advance model</th><th>When M.Express pays the client</th><th>Basis of advance</th><th>Risk carried by M.Express</th></tr>
+    <tr><td>Full provisional advance</td><td>At provisional approval, on return</td><td>95% of the provisional amount</td><td>Later deductions become a client recovery, not a partner shortfall</td></tr>
+    <tr><td>Final-approval advance</td><td>Only after the final approved amount</td><td>95% of the final approved amount</td><td>Minimal &ndash; advance and reimbursement are for the same confirmed figure</td></tr>
+  </table>
+  <p><strong>Worked example</strong> &ndash; full provisional advance, R8,000 deposit, R750 of tolls and fines confirmed after return:</p>
+  <table>
+    <tr><th>Item</th><th>Amount</th></tr>
+    <tr><td>Deposit held by car hire company</td><td>R8,000.00</td></tr>
+    <tr><td>Provisional approval at return</td><td>R8,000.00</td></tr>
+    <tr><td>M.Express fee &ndash; 5%</td><td>R400.00</td></tr>
+    <tr><td>Paid to client at return</td><td>R7,600.00</td></tr>
+    <tr><td>Tolls and fines confirmed after return</td><td>R750.00</td></tr>
+    <tr><td>Final amount car hire company reimburses M.Express</td><td>R7,250.00</td></tr>
+    <tr><td>Shortfall recovered from client</td><td>R750.00</td></tr>
+  </table>
+  <p>The full provisional model is the one that gives clients the speed they expect, but it also creates a receivable against the client, not just the partner. Every claim record carries both the provisional and the final amount, so any shortfall is traceable to a specific claim and recoverable.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>End-to-end process flow</h2>
+  <svg viewBox="0 0 760 440" role="img" aria-label="A provisional payout can later shrink once deductions are confirmed" width="100%">
+    <defs>
+      <marker id="pf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0 0L10 5L0 10z" fill="#c9d1cd"/>
+      </marker>
+    </defs>
+    <text x="24" y="28" font-size="14" font-weight="600" fill="#1b2420">A provisional payout can later shrink once deductions are confirmed</text>
+    <g fill="none" stroke="#c9d1cd" stroke-width="1.25">
+      <path d="M200 90H220" marker-end="url(#pf-arrow)"/>
+      <path d="M370 90H390" marker-end="url(#pf-arrow)"/>
+      <path d="M540 90H560" marker-end="url(#pf-arrow)"/>
+      <path d="M635 114V150" marker-end="url(#pf-arrow)"/>
+      <path d="M555 190H400V276" marker-end="url(#pf-arrow)"/>
+      <path d="M635 230V272" marker-end="url(#pf-arrow)"/>
+      <path d="M400 324V340H518V366" marker-end="url(#pf-arrow)"/>
+      <path d="M635 328V340H518V366"/>
+    </g>
+    <rect x="50" y="66" width="150" height="48" rx="8" fill="none" stroke="#c9d1cd" stroke-width="1.25"/>
+    <text x="125" y="94" text-anchor="middle" font-size="13" fill="#1b2420">Deposit held</text>
+    <rect x="220" y="66" width="150" height="48" rx="8" fill="none" stroke="#c9d1cd" stroke-width="1.25"/>
+    <text x="295" y="94" text-anchor="middle" font-size="13" fill="#1b2420">Claim submitted</text>
+    <rect x="390" y="66" width="150" height="48" rx="8" fill="none" stroke="#c9d1cd" stroke-width="1.25"/>
+    <text x="465" y="94" text-anchor="middle" font-size="13" fill="#1b2420">Client accepts terms</text>
+    <rect x="560" y="66" width="150" height="48" rx="8" fill="#0E5A4A" fill-opacity="0.12" stroke="#0E5A4A" stroke-width="2"/>
+    <text x="635" y="94" text-anchor="middle" font-size="13" font-weight="600" fill="#1b2420">Client paid 95%</text>
+    <polygon points="555,190 635,150 715,190 635,230" fill="none" stroke="#c9d1cd" stroke-width="1.25"/>
+    <text x="635" y="194" text-anchor="middle" font-size="11.5" fill="#1b2420">Deductions confirmed?</text>
+    <rect x="305" y="276" width="190" height="48" rx="8" fill="none" stroke="#c9d1cd" stroke-width="1.25"/>
+    <text x="400" y="304" text-anchor="middle" font-size="13" fill="#1b2420">Reimburse in full</text>
+    <rect x="540" y="272" width="190" height="56" rx="8" fill="none" stroke="#c9d1cd" stroke-width="1.25"/>
+    <text x="635" y="294" text-anchor="middle" font-size="13" fill="#1b2420">Reduced reimbursement</text>
+    <text x="635" y="312" text-anchor="middle" font-size="13" fill="#1b2420">bill client shortfall</text>
+    <rect x="418" y="366" width="200" height="48" rx="8" fill="#0E5A4A" fill-opacity="0.12" stroke="#0E5A4A" stroke-width="2"/>
+    <text x="518" y="394" text-anchor="middle" font-size="13" font-weight="600" fill="#1b2420">Reconciled &amp; settled</text>
+    <text x="376" y="244" font-size="11.5" fill="#6b7a74">no</text>
+    <text x="647" y="244" font-size="11.5" fill="#6b7a74">yes</text>
+  </svg>
+  <p class="cap">deposit-to-settlement flow &middot; 1 decision point</p>
+  <p>The branch at return matters operationally: on the full provisional model, &ldquo;Client paid&rdquo; happens before &ldquo;Deductions confirmed&rdquo; &ndash; M.Express is carrying an open position on that claim until the hire company&rsquo;s final figure lands and either confirms the full amount or triggers a shortfall recovery from the client.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Payment and data integration</h2>
+  <p>Two integration tiers, so a large partner like Telegenix and a small independent hire company can both connect.</p>
+  <table>
+    <tr><th>Integration tier</th><th>How the partner connects</th><th>Typical partner</th></tr>
+    <tr><td>API / webhook</td><td>Partner&rsquo;s reservation system posts claims to the M.Express claims API; M.Express pushes status webhooks (approved, paid, reimbursement due, overdue) back to the partner</td><td>National/franchise chains (Telegenix, Europcar, Hertz, First Car Rental)</td></tr>
+    <tr><td>Partner portal</td><td>Partner staff log in to submit claims, upload return and damage documentation, and view amounts due, manually</td><td>Independent and regional hire companies</td></tr>
+  </table>
+  <p>Data exchanged per claim, at minimum:</p>
+  <ul>
+    <li>Client identity and bank details, for payout and verification</li>
+    <li>Deposit reference and hire agreement number</li>
+    <li>Provisional approved amount at return, and final approved amount once charges are reconciled</li>
+    <li>Supporting documents: hire agreement, return inspection report, any damage or fine evidence</li>
+    <li>Claim status and the payment and reimbursement references tied to it</li>
+  </ul>
+  <p>Settlement runs through the partner&rsquo;s and M.Express&rsquo;s own business bank accounts via EFT; no funds are held on behalf of either party outside a claim&rsquo;s own payout and reimbursement entries &ndash; consistent with paying its own financing obligations rather than operating a payment system for others, the distinction the existing compliance checklist flags for the bank and SARB assessment.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Partner onboarding policy</h2>
+  <p>No car hire company is integrated, even at portal level, before:</p>
+  <table>
+    <tr><th>Step</th><th>Requirement</th></tr>
+    <tr><td>Company verification</td><td>CIPC registration, directors and beneficial owners confirmed</td></tr>
+    <tr><td>Banking verification</td><td>Partner&rsquo;s settlement bank account confirmed and matched to the registered entity</td></tr>
+    <tr><td>Reimbursement agreement signed</td><td>Claim authority, final refund confirmation process, reimbursement due dates and dispute process, per the holding company agreement already specified</td></tr>
+    <tr><td>Exposure limit set</td><td>A per-partner cap on total outstanding advances, based on the partner&rsquo;s size, payment history and reimbursement track record</td></tr>
+    <tr><td>Integration tier assigned</td><td>API/webhook or portal, based on the partner&rsquo;s own systems and transaction volume</td></tr>
+  </table>
+  <p>New partners start on the final-approval advance model and a conservative exposure limit. A partner earns the full provisional advance model and a higher limit only after a track record of on-time reimbursement &ndash; for example 90 days and 20+ settled claims with no overdue reimbursement.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Risk, exposure and fraud controls</h2>
+  <p>These extend the operational controls already set out in the existing compliance checklist with controls specific to having many hire-company partners and a provisional/final amount gap.</p>
+  <ul>
+    <li><strong>Per-partner exposure limit</strong> &ndash; total outstanding advances to any one car hire company capped and monitored in real time; new claims from a partner at its limit are held, not paid.</li>
+    <li><strong>Per-client exposure limit</strong> &ndash; a client cannot have more than one open advance at a time across partners, checked by ID at claim verification.</li>
+    <li><strong>Duplicate-claim check</strong> &ndash; deposit reference and hire agreement number checked against open and settled claims before payout, to prevent the same deposit being financed twice.</li>
+    <li><strong>Independent bank-detail verification</strong> &ndash; any change to a client&rsquo;s or partner&rsquo;s bank details is verified through a separate channel before the next payout.</li>
+    <li><strong>Separation of duties</strong> &ndash; the person approving a claim is not the person releasing the payment.</li>
+    <li><strong>Daily reconciliation</strong> &ndash; every payout and reimbursement matched to its claim; unmatched items escalated the same day.</li>
+    <li><strong>Provisional-to-final variance monitoring</strong> &ndash; claims where the final approved amount comes in materially lower than the provisional amount are flagged for review, both as a client shortfall-recovery case and as a signal to reassess that partner&rsquo;s or claim type&rsquo;s risk.</li>
+    <li><strong>Working capital buffer</strong> &ndash; sized to cover partners&rsquo; average reimbursement cycle plus a stress margin, so one partner&rsquo;s late reimbursement doesn&rsquo;t stall payouts on other partners&rsquo; claims.</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Deductions, disputes and partial refunds</h2>
+  <p>This is the step that doesn&rsquo;t exist in a generic deposit refund.</p>
+  <ol>
+    <li>At vehicle return, the hire company confirms a provisional approved amount. If M.Express has advanced against this figure (full provisional model), that advance is a client receivable, not yet a closed claim.</li>
+    <li>The hire company finalises the amount &ndash; typically 14-30 days later &ndash; once tolls, e-tags and fines are reconciled; this is the final approved amount.</li>
+    <li>If final equals provisional, the reimbursement pack is issued for the full amount and the claim proceeds to settlement as normal.</li>
+    <li>If final is lower than provisional, the hire company&rsquo;s claim pack must itemise the deductions. M.Express issues the client a shortfall notice referencing the claim, with the deduction breakdown attached, and recovers the shortfall under the client agreement&rsquo;s clawback terms.</li>
+    <li>If the client disputes a deduction, the dispute is routed to the hire company &ndash; the party that applied the charge &ndash; not resolved by M.Express. M.Express pauses shortfall recovery on the disputed portion only, and the claim stays open until the hire company confirms or reverses it.</li>
+    <li>If the hire company&rsquo;s own claim is disputed or incomplete, it is held at &ldquo;Awaiting reimbursement&rdquo; and does not count against that partner&rsquo;s exposure limit as settled.</li>
+  </ol>
+  <p>The reimbursement pack (proof of payment, client acknowledgment, itemised final amount) shows provisional, deductions and final figures side by side &ndash; the same discipline the base system already applies to fee and payout breakdowns.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>SLAs and escalation</h2>
+  <table>
+    <tr><th>Stage</th><th>Target timeline</th><th>Escalation if missed</th></tr>
+    <tr><td>Claim verification (identity, bank details, duplicate check)</td><td>Same business day</td><td>Claim held, partner notified</td></tr>
+    <tr><td>Client payout after acceptance</td><td>Within 1 business day</td><td>Ops review, client notified of delay</td></tr>
+    <tr><td>Final amount confirmation from partner</td><td>30 days from return</td><td>Auto-reminder at 20 days; claim flagged overdue at 30</td></tr>
+    <tr><td>Reimbursement from partner</td><td>Per the reimbursement pack due date (standard: 7 days from issue)</td><td>Reminder at due date; formal notice at +7 days; claim counted against the partner&rsquo;s exposure limit, which is reduced at +14 days</td></tr>
+    <tr><td>Client shortfall recovery</td><td>14 days from shortfall notice</td><td>Standard credit-control follow-up per the client agreement</td></tr>
+  </table>
+  <p>An overdue reimbursement from one partner doesn&rsquo;t stop that partner&rsquo;s other in-flight claims from being honoured to clients. It reduces that partner&rsquo;s available exposure limit for new claims until resolved, so one slow partner can&rsquo;t be absorbed by over-exposure elsewhere.</p>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Contracts and documentation</h2>
+  <p>Builds on the document set already specified in the existing compliance checklist, with what&rsquo;s specific to vehicle hire called out.</p>
+  <table>
+    <tr><th>Document</th><th>Specific to vehicle hire</th></tr>
+    <tr><td>Holding company agreement (car hire partner)</td><td>Adds the provisional vs final amount process, the deduction categories the partner may claim (damage, fuel, tolls, e-tags, fines), the exposure limit and the integration tier</td></tr>
+    <tr><td>Client agreement</td><td>Adds an explicit shortfall clawback clause for the gap between the provisional and final approved amounts</td></tr>
+    <tr><td>Claim approval record</td><td>Captures both the provisional and final approved amounts against the claim</td></tr>
+    <tr><td>Reimbursement pack</td><td>Itemises deductions alongside proof of payment and acknowledgment</td></tr>
+    <tr><td>Partner integration agreement</td><td>API/webhook specification and SLAs, or portal terms of use, for the chosen integration tier</td></tr>
+    <tr><td>Shortfall notice</td><td>Issued to the client when the final amount is lower than the provisional one, with the deduction breakdown</td></tr>
+    <tr><td>Complaints and dispute policy</td><td>Extended to route deduction disputes to the hire company, with M.Express as the record-keeper rather than the adjudicator</td></tr>
+  </table>
+</section>
+
+<section class="sec">
+  <div class="runhead">M.EXPRESS</div>
+  <h2>Compliance alignment</h2>
+  <p>This system operates inside the same unresolved classification question flagged in the existing compliance checklist: whether M.Express is purchasing a confirmed receivable, providing credit, or something else. Nothing here resolves that question &ndash; it still needs the financial services attorney&rsquo;s sign-off before launch.</p>
+  <table>
+    <tr><th>Area</th><th>How this system touches it</th></tr>
+    <tr><td>NCR / credit regulation</td><td>The shortfall clawback on the provisional advance looks more credit-like than a simple deposit purchase, since the client owes M.Express if the final amount is lower &ndash; flag this specifically for the attorney&rsquo;s classification review</td></tr>
+    <tr><td>FICA</td><td>Each car hire partner and each client goes through the same verification already specified; no change for having multiple partners beyond volume</td></tr>
+    <tr><td>POPIA</td><td>Vehicle hire adds hire-agreement and inspection/damage documentation to what&rsquo;s collected &ndash; covered by the existing privacy notice and data-sharing basis, but the notice should name car hire companies as a recipient category explicitly</td></tr>
+    <tr><td>SARB / payment services</td><td>Multi-partner settlement strengthens the case for discussing the payment-service classification with the bank before scaling beyond one or two partners</td></tr>
+    <tr><td>Operational controls</td><td>The risk section above extends the existing operational control list for a multi-partner, two-stage-amount model</td></tr>
+  </table>
+  <p>Before onboarding the first car hire partner, take the same three appointments the compliance checklist recommends &ndash; the attorney, the accountant and the bank&rsquo;s compliance team &ndash; and add this framework&rsquo;s partner agreement and claim flow to what they review, calling out the provisional/final amount gap and the client shortfall clawback specifically.</p>
+</section>
+
+</body>
+</html>
