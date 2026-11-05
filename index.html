@@ -362,7 +362,7 @@
     <aside class="ledger panel" id="ledgerPanel"></aside>
   </div>
 
-  <p class="foot-note">Demo data only &mdash; Lindiwe Dlamini, Avis Fleet Services and the figures below are illustrative. Switch between the three tabs above to see what each party does and sees at each stage of the same claim.</p>
+  <p class="foot-note">Demo data only &mdash; Lindiwe Dlamini, Telegenix and the figures below are illustrative. Switch between the three tabs above to see what each party does and sees at each stage of the same claim.</p>
 </div>
 
 <script>
@@ -385,15 +385,15 @@
     settled:      { actor:null,       label:"Claim closed" }
   };
 
-  var ROLE_NAMES = { avis:"Avis Fleet Services", mexpress:"M.Express", client:"Lindiwe Dlamini" };
-  var ROLE_SHORT = { avis:"Avis Portal", mexpress:"M.Express Dashboard", client:"Client App" };
+  var ROLE_NAMES = { avis:"Telegenix", mexpress:"M.Express", client:"Lindiwe Dlamini" };
+  var ROLE_SHORT = { avis:"Telegenix Portal", mexpress:"M.Express Dashboard", client:"Client App" };
 
   var claim = {
     number: null,
     clientName: "Lindiwe Dlamini",
     idNumber: "8905•• •••• 08 1",
     bank: "FNB •••• 4471",
-    hireAgreement: "AVIS-CT-204891",
+    hireAgreement: "TLGX-CT-204891",
     branch: "Cape Town International Airport",
     vehicle: "VW Polo Vivo · CA 884-112",
     hireDates: "3 – 10 Oct 2026",
@@ -526,7 +526,7 @@
       '<div class="ledger-rows">' + rows + '</div>' +
       '<div class="ledger-meta">' +
         meta("Client", claim.clientName) +
-        meta("Partner", "Avis Fleet Services") +
+        meta("Partner", "Telegenix") +
         meta("Hire agreement", claim.hireAgreement) +
         meta("Vehicle", claim.vehicle) +
       '</div>';
@@ -554,7 +554,7 @@
   function renderAvis(el){
     if (claim.stage === "draft"){
       el.innerHTML =
-        '<p class="panel-eyebrow">Avis Portal</p>' +
+        '<p class="panel-eyebrow">Telegenix Portal</p>' +
         '<h2>Submit a deposit claim</h2>' +
         '<p class="deck">Vehicle returned to the Cape Town International Airport branch. Confirm the client and deposit details, then submit to M.Express for the advance.</p>' +
         '<div class="field-grid">' +
@@ -577,7 +577,7 @@
       var clean = claim.scenario === "clean";
       var dirty = claim.scenario === "deductions";
       el.innerHTML =
-        '<p class="panel-eyebrow">Avis Portal</p>' +
+        '<p class="panel-eyebrow">Telegenix Portal</p>' +
         '<h2>Vehicle returned &mdash; assess final amount</h2>' +
         '<p class="deck">Client has confirmed receipt of the advance. Record what, if anything, needs to be deducted from the deposit before the final figure goes to M.Express.</p>' +
         '<div class="scenario-row">' +
@@ -607,7 +607,7 @@
 
     if (claim.stage === "pack_sent"){
       el.innerHTML =
-        '<p class="panel-eyebrow">Avis Portal</p>' +
+        '<p class="panel-eyebrow">Telegenix Portal</p>' +
         '<h2>Reimbursement pack received</h2>' +
         '<p class="deck">M.Express has sent proof of payment, the client’s acknowledgment and the amount due. Reimburse the full confirmed amount and mark it sent.</p>' +
         '<div class="field-grid">' +
@@ -622,9 +622,9 @@
     }
 
     el.innerHTML =
-      '<p class="panel-eyebrow">Avis Portal</p>' +
+      '<p class="panel-eyebrow">Telegenix Portal</p>' +
       '<h2>Claim ' + (claim.number || "") + '</h2>' +
-      '<p class="deck">What the Avis branch sees while this claim moves through M.Express and the client.</p>' +
+      '<p class="deck">What the Telegenix branch sees while this claim moves through M.Express and the client.</p>' +
       waitingBlock("avis");
   }
 
@@ -638,7 +638,7 @@
           check("Client identity matches hire agreement") +
           check("Bank account ownership confirmed") +
           check("No duplicate claim on this deposit reference") +
-          check("Avis Fleet Services within its exposure limit") +
+          check("Telegenix within its exposure limit") +
         '</ul>' +
         '<button class="btn" id="actionBtn" type="button">Verify &amp; request client acceptance <span class="arrow">&rarr;</span></button>';
       bind("actionBtn", function(){ setStage("verified"); });
@@ -665,15 +665,15 @@
       el.innerHTML =
         '<p class="panel-eyebrow">M.Express Dashboard</p>' +
         '<h2>Issue reimbursement pack</h2>' +
-        '<p class="deck">Avis has confirmed the final amount. Package the proof of payment, client acknowledgment and amount due.</p>' +
+        '<p class="deck">Telegenix has confirmed the final amount. Package the proof of payment, client acknowledgment and amount due.</p>' +
         '<div class="field-grid">' +
           field("Provisional amount", money(claim.deposit)) +
           field("Deductions", money(claim.deductions), claim.deductions>0) +
           field("Final approved amount", money(finalAmount()), true) +
-          field("Reimbursement due from Avis", money(reimbursementDue()), true) +
+          field("Reimbursement due from Telegenix", money(reimbursementDue()), true) +
         '</div>' +
         (shortfall() > 0 ? '<div class="notice warn"><span>&#9888;</span><div><strong>Client shortfall of ' + money(shortfall()) + '.</strong><p>A shortfall notice will be issued to ' + claim.clientName + ' once this pack is sent.</p></div></div>' : "") +
-        '<button class="btn" id="actionBtn" type="button">Send reimbursement pack to Avis <span class="arrow">&rarr;</span></button>';
+        '<button class="btn" id="actionBtn" type="button">Send reimbursement pack to Telegenix <span class="arrow">&rarr;</span></button>';
       bind("actionBtn", function(){ setStage("pack_sent"); });
       return;
     }
@@ -682,7 +682,7 @@
       el.innerHTML =
         '<p class="panel-eyebrow">M.Express Dashboard</p>' +
         '<h2>Reconcile claim ' + claim.number + '</h2>' +
-        '<p class="deck">Avis’s reimbursement has been matched to this claim. Close it out.</p>' +
+        '<p class="deck">Telegenix’s reimbursement has been matched to this claim. Close it out.</p>' +
         '<div class="field-grid">' +
           field("Reimbursement received", money(reimbursementDue()), true) +
           field("Matched to", claim.number, true) +
@@ -704,13 +704,13 @@
       el.innerHTML =
         '<p class="panel-eyebrow">Client App</p>' +
         '<h2>Your deposit advance</h2>' +
-        '<p class="deck">M.Express has verified your claim with Avis Fleet Services. Review the terms before your payout is released.</p>' +
+        '<p class="deck">M.Express has verified your claim with Telegenix. Review the terms before your payout is released.</p>' +
         '<div class="field-grid">' +
-          field("Deposit held by Avis", money(claim.deposit), true) +
+          field("Deposit held by Telegenix", money(claim.deposit), true) +
           field("M.Express fee (5%)", money(fee())) +
           field("You receive now", money(clientPayout()), true) +
         '</div>' +
-        '<div class="notice warn"><span>&#9888;</span><div><strong>If Avis later confirms tolls, fines or damage</strong><p>the difference is deducted from your R' + claim.deposit.toLocaleString() + ' deposit and billed to you — it is not an extra M.Express fee.</p></div></div>' +
+        '<div class="notice warn"><span>&#9888;</span><div><strong>If Telegenix later confirms tolls, fines or damage</strong><p>the difference is deducted from your R' + claim.deposit.toLocaleString() + ' deposit and billed to you — it is not an extra M.Express fee.</p></div></div>' +
         '<button class="btn" id="actionBtn" type="button">Accept terms <span class="arrow">&rarr;</span></button>';
       bind("actionBtn", function(){ setStage("accepted"); });
       return;
@@ -734,9 +734,9 @@
       el.innerHTML =
         '<p class="panel-eyebrow">Client App</p>' +
         '<h2>Shortfall notice</h2>' +
-        '<p class="deck">Avis confirmed charges against your deposit after your vehicle was returned.</p>' +
+        '<p class="deck">Telegenix confirmed charges against your deposit after your vehicle was returned.</p>' +
         deductionList() +
-        '<div class="notice danger"><span>&#9888;</span><div><strong>You owe ' + money(shortfall()) + '.</strong><p>Your advance was based on the full deposit. These are deductions Avis confirmed after return, which were never part of your refund.</p></div></div>' +
+        '<div class="notice danger"><span>&#9888;</span><div><strong>You owe ' + money(shortfall()) + '.</strong><p>Your advance was based on the full deposit. These are deductions Telegenix confirmed after return, which were never part of your refund.</p></div></div>' +
         '<button class="btn" id="actionBtn" type="button">Pay shortfall <span class="arrow">&rarr;</span></button>' +
         waitingBlock("client");
       bind("actionBtn", function(){ claim.shortfallPaid = true; render(); });
