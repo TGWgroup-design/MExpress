@@ -47,7 +47,8 @@
   }
 
   *{ box-sizing:border-box; }
-  html{ overflow-x:hidden; max-width:100%; }
+  html{ overflow-x:hidden; max-width:100%; scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
   body{
     margin:0; background:var(--paper); color:var(--ink);
     font-family:"Public Sans", system-ui, -apple-system, sans-serif;
@@ -73,11 +74,19 @@
   @media (max-width:900px){ .stat-grid{ grid-template-columns:repeat(3,1fr); } }
   @media (max-width:760px){ .stat-grid{ grid-template-columns:repeat(2,1fr); } }
   @media (max-width:480px){ .stat-grid{ grid-template-columns:1fr; } }
-  .stat{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); }
-  .stat .k{ font:600 11px "Public Sans",sans-serif; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); margin:0 0 8px; }
+  .stat{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow);
+    display:block; text-decoration:none; color:inherit; transition:border-color .15s, transform .15s;
+  }
+  .stat:hover{ border-color:var(--teal-500); transform:translateY(-1px); }
+  .stat:focus-visible{ outline:2px solid var(--teal-500); outline-offset:2px; }
+  .stat .k{ font:600 11px "Public Sans",sans-serif; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); margin:0 0 8px; display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .stat .k::after{ content:"\2192"; color:var(--teal-500); font-weight:700; opacity:0; transition:opacity .15s; }
+  .stat:hover .k::after, .stat:focus-visible .k::after{ opacity:1; }
   .stat .v{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:24px; font-weight:600; color:var(--ink); }
   .stat .sub{ font-size:12px; color:var(--ink-faint); margin-top:4px; }
   .stat.danger .v{ color:var(--red-600); }
+  section{ scroll-margin-top:20px; }
 
   section{ margin-bottom:34px; }
   .sec-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
@@ -170,34 +179,34 @@
   <p class="asof">All-time partner figures &middot; recent claims shown below &middot; <span class="pill">As of Nov 5, 2026</span></p>
 
   <div class="stat-grid">
-    <div class="stat">
+    <a class="stat" href="#sec-made" data-filter="">
       <div class="k">Paid to clients</div>
       <div class="v" id="statPaid"></div>
       <div class="sub" id="statPaidSub"></div>
-    </div>
-    <div class="stat">
+    </a>
+    <a class="stat" href="#sec-received" data-filter="">
       <div class="k">Received from partners</div>
       <div class="v" id="statReceived"></div>
       <div class="sub" id="statReceivedSub"></div>
-    </div>
-    <div class="stat">
+    </a>
+    <a class="stat" href="#sec-hiring" data-filter="">
       <div class="k">Outstanding reimbursement</div>
       <div class="v" id="statOutstanding"></div>
       <div class="sub">Across 5 hiring partners</div>
-    </div>
-    <div class="stat danger">
+    </a>
+    <a class="stat danger" href="#sec-made" data-filter="overdue">
       <div class="k">Overdue reimbursement</div>
       <div class="v" id="statOverdue"></div>
       <div class="sub" id="statOverdueSub"></div>
-    </div>
-    <div class="stat">
+    </a>
+    <a class="stat" href="#sec-hiring" data-filter="">
       <div class="k">Active partners</div>
       <div class="v">5</div>
       <div class="sub">4 active &middot; 1 new &middot; 1 at risk</div>
-    </div>
+    </a>
   </div>
 
-  <section>
+  <section id="sec-hiring">
     <div class="sec-head">
       <h2>Hiring companies</h2>
       <span class="note">Exposure limit = per-partner cap on total outstanding advances</span>
@@ -238,10 +247,10 @@
     </div>
   </section>
 
-  <section>
+  <section id="sec-received">
     <div class="sec-head">
       <h2>Payments received</h2>
-      <span class="note">Reimbursement batches credited by hiring partners &mdash; a partner may settle several claims in one EFT</span>
+      <span class="note">Grouped from the Reimbursed/Settled claims below, net of any deductions &mdash; hover &ldquo;claims covered&rdquo; for the claim numbers</span>
     </div>
 
     <details class="status-guide">
@@ -274,7 +283,7 @@
     <p class="sec-head"><span class="note" id="receivedCount"></span></p>
   </section>
 
-  <section>
+  <section id="sec-made">
     <div class="sec-head">
       <h2>Payments made</h2>
       <input class="search" id="clientSearch" type="text" placeholder="Search client or partner&hellip;">
@@ -333,7 +342,7 @@
     <p class="sec-head"><span class="note" id="clientsCount"></span></p>
   </section>
 
-  <p class="foot-note">Demo data only &mdash; the 30 most recent payments made and payments received are shown; partner totals above reflect the full book. Figures are illustrative, built for the M.Express &times; car hire partner integration walkthrough.</p>
+  <p class="foot-note">Demo data only &mdash; Payments made shows the 30 most recent client payouts; Payments received shows only the batches actually reimbursed so far (a claim still at Reimbursement due or Overdue has no receipt yet). Partner totals above reflect the full book. Figures are illustrative, built for the M.Express &times; car hire partner integration walkthrough.</p>
 </div>
 
 <script>
@@ -433,23 +442,38 @@
   }
   clients.sort(function(a,b){ return a.date < b.date ? 1 : -1; });
 
+  // Payments received is built FROM the actual claims above, not generated independently:
+  // only a claim that has reached "reimbursed" or "settled" has actually been paid by its
+  // partner, and the amount a partner pays is the deposit net of any shortfall (deduction) -
+  // never the full deposit on a claim where a shortfall was recovered from the client instead.
+  var REIMBURSED_STATUSES = { reimbursed:true, settled:true };
+  var byPartner = {};
+  clients.forEach(function(c){
+    if (!REIMBURSED_STATUSES[c.status]) return;
+    (byPartner[c.partner] = byPartner[c.partner] || []).push(c);
+  });
+
   var reimbursements = [];
   var rcptCounter = 9100;
-  for (var i = 0; i < 30; i++){
-    var rPartner = pickWeighted(PARTNER_WEIGHTS);
-    var covered = 1 + Math.floor(rng() * 4);
-    var amount = 0;
-    for (var j = 0; j < covered; j++) amount += pick(DEPOSITS); // reimbursed at the claim's approved deposit value
-    var late = rPartner === "First Car Rental" ? rng() < 0.4 : false;
-    reimbursements.push({
-      ref: "RCPT-2026-" + (rcptCounter++),
-      partner: rPartner,
-      covered: covered,
-      amount: Math.round(amount),
-      date: addDays("2026-09-22", Math.floor(rng() * 44)),
-      status: late ? "late" : "on_time"
-    });
-  }
+  Object.keys(byPartner).forEach(function(partnerName){
+    var queue = byPartner[partnerName].slice().sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+    while (queue.length){
+      var batchSize = Math.min(queue.length, 1 + Math.floor(rng() * 4));
+      var batch = queue.splice(0, batchSize);
+      var amount = batch.reduce(function(s,c){ return s + (c.deposit - c.shortfall); }, 0);
+      var lastClaimDate = batch.reduce(function(latest,c){ return c.date > latest ? c.date : latest; }, batch[0].date);
+      var late = partnerName === "First Car Rental" ? rng() < 0.4 : false;
+      reimbursements.push({
+        ref: "RCPT-2026-" + (rcptCounter++),
+        partner: partnerName,
+        claims: batch.map(function(c){ return c.claim; }),
+        covered: batch.length,
+        amount: Math.round(amount),
+        date: addDays(lastClaimDate, 2 + Math.floor(rng() * 6)),
+        status: late ? "late" : "on_time"
+      });
+    }
+  });
   reimbursements.sort(function(a,b){ return a.date < b.date ? 1 : -1; });
 
   var CLIENT_STATUS = {
@@ -506,7 +530,7 @@
       return "<tr>" +
         "<td class=\"mono\">" + r.ref + "</td>" +
         "<td class=\"cell-name\">" + r.partner + "</td>" +
-        "<td class=\"num\">" + r.covered + "</td>" +
+        "<td class=\"num\" title=\"" + r.claims.join(", ") + "\">" + r.covered + "</td>" +
         "<td class=\"num\">" + moneyRound(r.amount) + "</td>" +
         "<td class=\"mono\">" + fmtDate(r.date) + "</td>" +
         "<td><span class=\"pill " + st.cls + "\"><span class=\"dot\"></span>" + st.label + "</span></td>" +
@@ -539,7 +563,10 @@
     filter = (filter || "").trim().toLowerCase();
     var rows = clients.filter(function(c){
       if (!filter) return true;
-      return c.client.toLowerCase().indexOf(filter) !== -1 || c.partner.toLowerCase().indexOf(filter) !== -1;
+      var statusLabel = CLIENT_STATUS[c.status].label.toLowerCase();
+      return c.client.toLowerCase().indexOf(filter) !== -1
+        || c.partner.toLowerCase().indexOf(filter) !== -1
+        || statusLabel.indexOf(filter) !== -1;
     });
     var html = rows.map(function(c){
       var fee = c.deposit * 0.07;
@@ -563,6 +590,16 @@
 
   document.getElementById("clientSearch").addEventListener("input", function(e){
     renderClients(e.target.value);
+  });
+
+  document.querySelectorAll(".stat[data-filter]").forEach(function(tile){
+    tile.addEventListener("click", function(){
+      var f = tile.getAttribute("data-filter");
+      if (!f) return;
+      var search = document.getElementById("clientSearch");
+      search.value = f;
+      renderClients(f);
+    });
   });
 
   renderStats();
