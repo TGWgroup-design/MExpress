@@ -1,0 +1,332 @@
+<title>M.Express Master Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#F6F7F2;
+    --surface:#FFFFFF;
+    --surface-2:#EEF1EC;
+    --ink:#10231F;
+    --ink-soft:#4B5C54;
+    --ink-faint:#7C8B86;
+    --line:#D8DED7;
+    --teal-700:#0E5A4A;
+    --teal-600:#146E59;
+    --teal-500:#1C8C73;
+    --teal-100:#DCEEE7;
+    --amber-600:#B5680B;
+    --amber-100:#F7E6CF;
+    --red-600:#B23A2E;
+    --red-100:#F6DCD8;
+    --shadow: 0 1px 2px rgba(16,35,31,.06), 0 8px 24px -16px rgba(16,35,31,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0B1613; --surface:#122420; --surface-2:#16302A;
+      --ink:#EAF2EE; --ink-soft:#A9BDB5; --ink-faint:#7E958C; --line:#24403A;
+      --teal-700:#3FCBA6; --teal-600:#37B795; --teal-500:#49CDA8; --teal-100:rgba(73,205,168,.14);
+      --amber-600:#E3A33D; --amber-100:rgba(227,163,61,.16);
+      --red-600:#E2685A; --red-100:rgba(226,104,90,.16);
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B1613; --surface:#122420; --surface-2:#16302A;
+    --ink:#EAF2EE; --ink-soft:#A9BDB5; --ink-faint:#7E958C; --line:#24403A;
+    --teal-700:#3FCBA6; --teal-600:#37B795; --teal-500:#49CDA8; --teal-100:rgba(73,205,168,.14);
+    --amber-600:#E3A33D; --amber-100:rgba(227,163,61,.16);
+    --red-600:#E2685A; --red-100:rgba(226,104,90,.16);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.5);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Public Sans", system-ui, -apple-system, sans-serif;
+    font-size:14px; line-height:1.5; overflow-x:hidden;
+  }
+  .shell{ max-width:1180px; margin:0 auto; padding:28px 24px 64px; }
+  @media (max-width:480px){ .shell{ padding:18px 16px 48px; } }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:6px; }
+  .brand{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .brand .mark{ font-family:"Archivo",sans-serif; font-weight:800; font-size:19px; letter-spacing:.01em; color:var(--teal-700); }
+  .brand .sub{ font-size:12.5px; color:var(--ink-faint); }
+  .nav-link{
+    appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    font:500 12.5px "Public Sans",sans-serif; padding:7px 12px; border-radius:7px; cursor:pointer;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .nav-link:hover{ border-color:var(--teal-500); color:var(--teal-700); }
+  .asof{ font-size:12px; color:var(--ink-faint); margin:4px 0 24px; }
+  .asof .pill{ display:inline-block; background:var(--surface-2); color:var(--ink-soft); border-radius:99px; padding:2px 9px; font-size:11.5px; }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+  @media (max-width:760px){ .stat-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:480px){ .stat-grid{ grid-template-columns:1fr; } }
+  .stat{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); }
+  .stat .k{ font:600 11px "Public Sans",sans-serif; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); margin:0 0 8px; }
+  .stat .v{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; font-size:24px; font-weight:600; color:var(--ink); }
+  .stat .sub{ font-size:12px; color:var(--ink-faint); margin-top:4px; }
+  .stat.danger .v{ color:var(--red-600); }
+
+  section{ margin-bottom:34px; }
+  .sec-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .sec-head h2{ font-family:"Archivo",sans-serif; font-weight:700; font-size:18px; margin:0; }
+  .sec-head .note{ font-size:12px; color:var(--ink-faint); }
+
+  .search{
+    width:100%; max-width:280px; padding:9px 12px; border-radius:8px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    font:500 13px "Public Sans",sans-serif;
+  }
+  .search:focus-visible{ outline:2px solid var(--teal-500); outline-offset:1px; }
+
+  .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:var(--shadow); }
+  table{ width:100%; border-collapse:collapse; font-size:13px; min-width:640px; }
+  thead th{
+    text-align:left; font:600 10.5px "Public Sans",sans-serif; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-faint); background:var(--surface-2); padding:11px 16px; white-space:nowrap;
+    position:sticky; top:0;
+  }
+  tbody td{ padding:12px 16px; border-top:1px solid var(--line); vertical-align:middle; }
+  tbody tr:hover{ background:var(--surface-2); }
+  td.num, th.num{ text-align:right; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; }
+  td.mono{ font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; color:var(--ink-soft); font-size:12.5px; }
+  .cell-name{ font-weight:600; }
+  .cell-sub{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; font:600 11px "Public Sans",sans-serif;
+    padding:3px 10px; border-radius:99px; white-space:nowrap;
+  }
+  .pill .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .pill-good{ background:var(--teal-100); color:var(--teal-700); }
+  .pill-progress{ background:var(--amber-100); color:var(--amber-600); }
+  .pill-danger{ background:var(--red-100); color:var(--red-600); }
+  .pill-neutral{ background:var(--surface-2); color:var(--ink-faint); }
+
+  .util{ width:84px; }
+  .util-track{ height:6px; border-radius:99px; background:var(--surface-2); overflow:hidden; margin-bottom:4px; }
+  .util-fill{ height:100%; background:var(--teal-500); border-radius:99px; }
+  .util-fill.warn{ background:var(--amber-600); }
+  .util-fill.danger{ background:var(--red-600); }
+  .util-label{ font-size:10.5px; color:var(--ink-faint); font-family:"IBM Plex Mono",monospace; }
+
+  .shortfall-amt{ color:var(--red-600); font-weight:600; }
+  .dash{ color:var(--ink-faint); }
+
+  .foot-note{ margin-top:22px; font-size:12px; color:var(--ink-faint); max-width:70ch; }
+</style>
+
+<div class="shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="mark">M.Express</span>
+      <span class="sub">Master dashboard</span>
+    </div>
+    <a class="nav-link" href="index.html">&larr; Claim flow demo</a>
+  </div>
+  <p class="asof">All-time partner figures &middot; recent claims shown below &middot; <span class="pill">As of Nov 5, 2026</span></p>
+
+  <div class="stat-grid">
+    <div class="stat">
+      <div class="k">Paid to clients</div>
+      <div class="v" id="statPaid"></div>
+      <div class="sub" id="statPaidSub"></div>
+    </div>
+    <div class="stat">
+      <div class="k">Outstanding reimbursement</div>
+      <div class="v" id="statOutstanding"></div>
+      <div class="sub">Across 5 hiring partners</div>
+    </div>
+    <div class="stat danger">
+      <div class="k">Overdue reimbursement</div>
+      <div class="v" id="statOverdue"></div>
+      <div class="sub" id="statOverdueSub"></div>
+    </div>
+    <div class="stat">
+      <div class="k">Active partners</div>
+      <div class="v">5</div>
+      <div class="sub">4 active &middot; 1 new &middot; 1 at risk</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Hiring companies</h2>
+      <span class="note">Exposure limit = per-partner cap on total outstanding advances</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Partner</th>
+            <th>Integration</th>
+            <th class="num">Exposure limit</th>
+            <th class="num">Outstanding</th>
+            <th>Utilisation</th>
+            <th class="num">Open claims</th>
+            <th class="num">Overdue</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="partnersBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Clients paid</h2>
+      <input class="search" id="clientSearch" type="text" placeholder="Search client or partner&hellip;">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Claim</th>
+            <th>Client</th>
+            <th>Partner</th>
+            <th class="num">Deposit</th>
+            <th class="num">Fee (7%)</th>
+            <th class="num">Paid to client</th>
+            <th class="num">Shortfall</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="clientsBody"></tbody>
+      </table>
+    </div>
+    <p class="sec-head"><span class="note" id="clientsCount"></span></p>
+  </section>
+
+  <p class="foot-note">Demo data only &mdash; the ten most recent claims are shown; partner totals reflect the full book. Figures are illustrative, built for the M.Express &times; car hire partner integration walkthrough.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  function money(n){
+    var fixed = Math.abs(n).toFixed(2);
+    var parts = fixed.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return (n < 0 ? "−R " : "R ") + parts[0] + "." + parts[1];
+  }
+  function moneyRound(n){
+    return "R " + Math.round(n).toLocaleString("en-ZA");
+  }
+
+  var partners = [
+    { name:"Telegenix", tier:"API / webhook", limit:250000, outstanding:42500, open:3, overdue:0, status:"active" },
+    { name:"Avis Fleet Services", tier:"API / webhook", limit:400000, outstanding:128300, open:6, overdue:1, status:"active" },
+    { name:"Europcar", tier:"Partner portal", limit:150000, outstanding:36800, open:2, overdue:0, status:"active" },
+    { name:"Hertz", tier:"API / webhook", limit:300000, outstanding:9500, open:1, overdue:0, status:"new" },
+    { name:"First Car Rental", tier:"Partner portal", limit:80000, outstanding:19400, open:2, overdue:2, status:"risk" }
+  ];
+
+  var clients = [
+    { claim:"MX-2026-04871", client:"Lindiwe Dlamini", partner:"Telegenix", deposit:8000, status:"settled", date:"2026-10-12", shortfall:0 },
+    { claim:"MX-2026-04902", client:"Sipho Nkosi", partner:"Avis Fleet Services", deposit:12000, status:"reimbursed", date:"2026-10-18", shortfall:0 },
+    { claim:"MX-2026-04915", client:"Chantelle Adams", partner:"Europcar", deposit:6500, status:"reimbursement_due", date:"2026-10-22", shortfall:0 },
+    { claim:"MX-2026-04930", client:"Thabo Molefe", partner:"Avis Fleet Services", deposit:9200, status:"settled", date:"2026-10-25", shortfall:350 },
+    { claim:"MX-2026-04958", client:"Aisha Patel", partner:"Telegenix", deposit:7800, status:"vehicle_returned", date:"2026-10-29", shortfall:0 },
+    { claim:"MX-2026-04971", client:"Johan van Wyk", partner:"First Car Rental", deposit:5000, status:"overdue", date:"2026-10-14", shortfall:0 },
+    { claim:"MX-2026-04988", client:"Nomvula Khumalo", partner:"Avis Fleet Services", deposit:15000, status:"client_paid", date:"2026-11-01", shortfall:0 },
+    { claim:"MX-2026-05002", client:"Werner Botha", partner:"Hertz", deposit:10000, status:"verified", date:"2026-11-03", shortfall:0 },
+    { claim:"MX-2026-05010", client:"Palesa Mokoena", partner:"Europcar", deposit:6000, status:"settled", date:"2026-10-30", shortfall:0 },
+    { claim:"MX-2026-05021", client:"Kyle Fourie", partner:"First Car Rental", deposit:4500, status:"overdue", date:"2026-10-20", shortfall:0 }
+  ];
+
+  var CLIENT_STATUS = {
+    settled:            { label:"Settled",              cls:"pill-good" },
+    reimbursed:         { label:"Reimbursed",            cls:"pill-good" },
+    reimbursement_due:  { label:"Reimbursement due",     cls:"pill-progress" },
+    vehicle_returned:   { label:"Vehicle returned",      cls:"pill-progress" },
+    client_paid:        { label:"Client paid",           cls:"pill-progress" },
+    verified:           { label:"Verified & accepted",   cls:"pill-neutral" },
+    overdue:            { label:"Overdue reimbursement", cls:"pill-danger" }
+  };
+  var PARTNER_STATUS = {
+    active: { label:"Active", cls:"pill-good" },
+    new:    { label:"New",    cls:"pill-neutral" },
+    risk:   { label:"At risk", cls:"pill-danger" }
+  };
+
+  function fmtDate(iso){
+    var d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("en-ZA", { day:"numeric", month:"short", year:"numeric" });
+  }
+
+  function renderStats(){
+    var totalPaid = 0;
+    clients.forEach(function(c){ totalPaid += c.deposit * 0.93; });
+    document.getElementById("statPaid").textContent = moneyRound(totalPaid);
+    document.getElementById("statPaidSub").textContent = clients.length + " claims, last 30 days";
+
+    var totalOutstanding = partners.reduce(function(s,p){ return s + p.outstanding; }, 0);
+    document.getElementById("statOutstanding").textContent = moneyRound(totalOutstanding);
+
+    var overdueClaims = clients.filter(function(c){ return c.status === "overdue"; });
+    var overdueAmt = overdueClaims.reduce(function(s,c){ return s + c.deposit; }, 0);
+    document.getElementById("statOverdue").textContent = overdueClaims.length + " claim" + (overdueClaims.length===1?"":"s");
+    document.getElementById("statOverdueSub").textContent = moneyRound(overdueAmt) + " at risk, First Car Rental";
+  }
+
+  function renderPartners(){
+    var html = partners.map(function(p){
+      var pct = Math.round((p.outstanding / p.limit) * 100);
+      var barCls = p.status === "risk" ? "danger" : (pct > 60 ? "warn" : "");
+      var st = PARTNER_STATUS[p.status];
+      return "<tr>" +
+        "<td class=\"cell-name\">" + p.name + "</td>" +
+        "<td>" + p.tier + "</td>" +
+        "<td class=\"num\">" + moneyRound(p.limit) + "</td>" +
+        "<td class=\"num\">" + moneyRound(p.outstanding) + "</td>" +
+        "<td><div class=\"util\"><div class=\"util-track\"><div class=\"util-fill " + barCls + "\" style=\"width:" + Math.min(pct,100) + "%\"></div></div><div class=\"util-label\">" + pct + "%</div></div></td>" +
+        "<td class=\"num\">" + p.open + "</td>" +
+        "<td class=\"num\">" + p.overdue + "</td>" +
+        "<td><span class=\"pill " + st.cls + "\"><span class=\"dot\"></span>" + st.label + "</span></td>" +
+      "</tr>";
+    }).join("");
+    document.getElementById("partnersBody").innerHTML = html;
+  }
+
+  function renderClients(filter){
+    filter = (filter || "").trim().toLowerCase();
+    var rows = clients.filter(function(c){
+      if (!filter) return true;
+      return c.client.toLowerCase().indexOf(filter) !== -1 || c.partner.toLowerCase().indexOf(filter) !== -1;
+    });
+    var html = rows.map(function(c){
+      var fee = c.deposit * 0.07;
+      var paid = c.deposit - fee;
+      var st = CLIENT_STATUS[c.status];
+      return "<tr>" +
+        "<td class=\"mono\">" + c.claim + "</td>" +
+        "<td class=\"cell-name\">" + c.client + "</td>" +
+        "<td>" + c.partner + "</td>" +
+        "<td class=\"num\">" + money(c.deposit) + "</td>" +
+        "<td class=\"num\">" + money(fee) + "</td>" +
+        "<td class=\"num\">" + money(paid) + "</td>" +
+        "<td class=\"num\">" + (c.shortfall > 0 ? "<span class=\"shortfall-amt\">" + money(c.shortfall) + "</span>" : "<span class=\"dash\">&ndash;</span>") + "</td>" +
+        "<td><span class=\"pill " + st.cls + "\"><span class=\"dot\"></span>" + st.label + "</span></td>" +
+        "<td class=\"mono\">" + fmtDate(c.date) + "</td>" +
+      "</tr>";
+    }).join("");
+    document.getElementById("clientsBody").innerHTML = html || "<tr><td colspan=\"9\" style=\"text-align:center;color:var(--ink-faint);padding:24px;\">No claims match &ldquo;" + filter + "&rdquo;.</td></tr>";
+    document.getElementById("clientsCount").textContent = "Showing " + rows.length + " of " + clients.length + " recent claims";
+  }
+
+  document.getElementById("clientSearch").addEventListener("input", function(e){
+    renderClients(e.target.value);
+  });
+
+  renderStats();
+  renderPartners();
+  renderClients("");
+})();
+</script>

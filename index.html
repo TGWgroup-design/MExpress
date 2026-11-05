@@ -369,7 +369,10 @@
       <span class="mark">M.Express</span>
       <span class="sub">Claim flow &mdash; interactive demo</span>
     </div>
-    <button class="reset-link" id="resetBtn" type="button">&#8635; Reset demo</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="reset-link" href="dashboard.html" style="text-decoration:none;display:inline-flex;align-items:center;">Master dashboard &rarr;</a>
+      <button class="reset-link" id="resetBtn" type="button">&#8635; Reset demo</button>
+    </div>
   </div>
 
   <div class="role-tabs" id="roleTabs"></div>
@@ -396,7 +399,7 @@
   var NEXT_ACTOR = {
     draft:        { actor:"avis",     label:"Submit the claim" },
     submitted:    { actor:"mexpress", label:"Verify claim &amp; bank details" },
-    verified:     { actor:"client",   label:"Accept the 5% fee &amp; advance terms" },
+    verified:     { actor:"client",   label:"Accept the 7% fee &amp; advance terms" },
     accepted:     { actor:"mexpress", label:"Release payment to client" },
     paid:         { actor:"client",   label:"Confirm receipt" },
     acknowledged: { actor:"avis",     label:"Record vehicle return &amp; assess deductions" },
@@ -419,7 +422,7 @@
     vehicle: "VW Polo Vivo · CA 884-112",
     hireDates: "3 – 10 Oct 2026",
     deposit: 8000,
-    feeRate: 0.05,
+    feeRate: 0.07,
     deductions: 0,
     deductionItems: [],
     scenario: null,
@@ -526,7 +529,7 @@
 
     rows += row("Deposit held", started ? money(claim.deposit) : "—");
     rows += row("Provisional amount", started ? money(claim.deposit) : "—");
-    rows += row("M.Express fee (5%)", started ? money(fee()) : "—", "sub");
+    rows += row("M.Express fee (7%)", started ? money(fee()) : "—", "sub");
     rows += row("Paid to client", started ? money(clientPayout()) : "—", "highlight");
 
     if (returned){
@@ -670,10 +673,10 @@
       el.innerHTML =
         '<p class="panel-eyebrow">M.Express Dashboard</p>' +
         '<h2>Release payment</h2>' +
-        '<p class="deck">Client has accepted the fee and advance terms. Pay out 95% of the provisional amount.</p>' +
+        '<p class="deck">Client has accepted the fee and advance terms. Pay out 93% of the provisional amount.</p>' +
         '<div class="field-grid">' +
           field("Provisional amount", money(claim.deposit), true) +
-          field("Fee (5%)", money(fee())) +
+          field("Fee (7%)", money(fee())) +
           field("Net payout", money(clientPayout()), true) +
           field("Destination", claim.bank) +
         '</div>' +
@@ -728,7 +731,7 @@
         '<p class="deck">M.Express has verified your claim with Telegenix. Review the terms before your payout is released.</p>' +
         '<div class="field-grid">' +
           field("Deposit held by Telegenix", money(claim.deposit), true) +
-          field("M.Express fee (5%)", money(fee())) +
+          field("M.Express fee (7%)", money(fee())) +
           field("You receive now", money(clientPayout()), true) +
         '</div>' +
         '<div class="notice warn"><span>&#9888;</span><div><strong>If Telegenix later confirms tolls, fines or damage</strong><p>the difference is deducted from your R' + claim.deposit.toLocaleString() + ' deposit and billed to you — it is not an extra M.Express fee.</p></div></div>' +
