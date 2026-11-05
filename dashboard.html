@@ -361,7 +361,7 @@
   }
 
   var partners = [
-    { name:"Telegenix", tier:"API / webhook", limit:250000, outstanding:42500, open:3, overdue:0, status:"active" },
+    { name:"Telegenix", tier:"API / webhook", limit:250000, outstanding:42500, open:3, overdue:0, status:"active", fleet:"18 clients &middot; 30 fleet assets", fleetDetail:"26 vehicles, 1 forklift, 3 trailers" },
     { name:"Avis Fleet Services", tier:"API / webhook", limit:400000, outstanding:128300, open:6, overdue:1, status:"active" },
     { name:"Europcar", tier:"Partner portal", limit:150000, outstanding:36800, open:2, overdue:0, status:"active" },
     { name:"Hertz", tier:"API / webhook", limit:300000, outstanding:9500, open:1, overdue:0, status:"new" },
@@ -547,7 +547,7 @@
       var barCls = p.status === "risk" ? "danger" : (pct > 60 ? "warn" : "");
       var st = PARTNER_STATUS[p.status];
       return "<tr>" +
-        "<td class=\"cell-name\">" + p.name + "</td>" +
+        "<td class=\"cell-name\">" + p.name + (p.fleet ? "<div class=\"cell-sub\" title=\"" + (p.fleetDetail || "") + "\">" + p.fleet + "</div>" : "") + "</td>" +
         "<td>" + p.tier + "</td>" +
         "<td class=\"num\">" + moneyRound(p.limit) + "</td>" +
         "<td class=\"num\">" + moneyRound(p.outstanding) + "</td>" +
