@@ -126,6 +126,34 @@
   .dash{ color:var(--ink-faint); }
 
   .foot-note{ margin-top:22px; font-size:12px; color:var(--ink-faint); max-width:70ch; }
+
+  .status-guide{
+    border:1px solid var(--line); border-radius:12px; background:var(--surface);
+    margin-bottom:14px; box-shadow:var(--shadow);
+  }
+  .status-guide summary{
+    cursor:pointer; padding:12px 16px; font:600 13px "Public Sans",sans-serif; color:var(--ink);
+    display:flex; align-items:center; gap:8px; list-style:none;
+  }
+  .status-guide summary::-webkit-details-marker{ display:none; }
+  .status-guide summary::before{
+    content:"+"; font:700 14px "Archivo",sans-serif; color:var(--teal-700);
+    width:18px; height:18px; display:flex; align-items:center; justify-content:center;
+    border:1.5px solid var(--line); border-radius:50%; flex:none;
+  }
+  .status-guide[open] summary::before{ content:"\2212"; }
+  .status-guide summary .hint{ font-weight:400; color:var(--ink-faint); font-size:12px; }
+  .status-row{
+    display:flex; gap:14px; align-items:flex-start; padding:12px 16px;
+    border-top:1px solid var(--line);
+  }
+  .status-row .pill{ flex:none; margin-top:1px; min-width:150px; justify-content:center; }
+  .status-row p{ margin:0; font-size:12.5px; color:var(--ink-soft); }
+  .status-row p strong{ color:var(--ink); }
+  @media (max-width:600px){
+    .status-row{ flex-direction:column; gap:6px; }
+    .status-row .pill{ min-width:0; }
+  }
 </style>
 </head>
 <body>
@@ -221,6 +249,39 @@
       <h2>Payments made</h2>
       <input class="search" id="clientSearch" type="text" placeholder="Search client or partner&hellip;">
     </div>
+
+    <details class="status-guide">
+      <summary>What each status means <span class="hint">&mdash; the scenario behind it</span></summary>
+      <div class="status-row">
+        <span class="pill pill-neutral"><span class="dot"></span>Verified &amp; accepted</span>
+        <p><strong>M.Express has checked the claim; the client has accepted the 7% fee.</strong> Identity, bank details and the duplicate-claim check are done. The client has agreed to the advance terms but hasn&rsquo;t been paid yet &mdash; this is the step just before M.Express releases money.</p>
+      </div>
+      <div class="status-row">
+        <span class="pill pill-progress"><span class="dot"></span>Client paid</span>
+        <p><strong>M.Express has paid the client their 93% advance.</strong> The EFT is out. M.Express is now waiting on the client to confirm receipt before the vehicle-return step can begin.</p>
+      </div>
+      <div class="status-row">
+        <span class="pill pill-progress"><span class="dot"></span>Vehicle returned</span>
+        <p><strong>The client has acknowledged payment and returned the vehicle.</strong> The hiring partner is inspecting it and assessing any deductions (fuel, tolls, e-tags, fines, damage) before confirming a final approved amount.</p>
+      </div>
+      <div class="status-row">
+        <span class="pill pill-progress"><span class="dot"></span>Reimbursement due</span>
+        <p><strong>The partner has confirmed the final amount; M.Express has sent the reimbursement pack.</strong> M.Express is waiting on the partner&rsquo;s EFT, due within 7 days of the pack being issued.</p>
+      </div>
+      <div class="status-row">
+        <span class="pill pill-good"><span class="dot"></span>Reimbursed</span>
+        <p><strong>The partner&rsquo;s EFT has landed and been matched to this claim.</strong> The money is in; the claim just needs its final reconciliation sign-off to close.</p>
+      </div>
+      <div class="status-row">
+        <span class="pill pill-good"><span class="dot"></span>Settled</span>
+        <p><strong>Fully reconciled and closed.</strong> If deductions brought the final amount below what the client was advanced, the Shortfall column shows what M.Express is recovering from the client &mdash; that recovery can still be outstanding even once the claim itself is settled.</p>
+      </div>
+      <div class="status-row">
+        <span class="pill pill-danger"><span class="dot"></span>Overdue reimbursement</span>
+        <p><strong>The partner missed its 7-day reimbursement deadline.</strong> Client payouts on that partner&rsquo;s other claims still go ahead as normal, but this partner&rsquo;s exposure limit for new claims is reduced until it pays. Currently only happening with First Car Rental.</p>
+      </div>
+    </details>
+
     <div class="table-wrap">
       <table>
         <thead>
