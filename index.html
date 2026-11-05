@@ -74,11 +74,15 @@
     font-family:"Public Sans", system-ui, -apple-system, sans-serif;
     font-size:14px;
     line-height:1.5;
+    overflow-x:hidden;
   }
   .shell{
     max-width:1180px;
     margin:0 auto;
     padding:28px 24px 64px;
+  }
+  @media (max-width: 480px){
+    .shell{ padding:18px 16px 48px; }
   }
 
   /* ---------- header ---------- */
@@ -127,6 +131,9 @@
     border-radius:10px;
     margin-bottom:20px;
     width:fit-content;
+    max-width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
   }
   .role-tab{
     appearance:none;
@@ -202,6 +209,20 @@
   @media (max-width: 760px){
     .layout{ grid-template-columns:1fr; }
     .stepper ol{ grid-template-columns:repeat(4,1fr); row-gap:16px; }
+  }
+  @media (max-width: 480px){
+    .stepper ol{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .step{ flex-direction:row; align-items:center; gap:10px; }
+    .step .bar{ display:none; }
+    .step .node{ width:26px; height:26px; }
+    .step.done .node{ background:var(--teal-500); border-color:var(--teal-500); color:#fff; }
+    .step.current .node{ border-color:var(--amber-600); color:var(--amber-600); background:var(--amber-100); }
+    .step .label{ margin:0; }
+    .role-tab{ padding:8px 12px; font-size:12px; }
+    .role-tab .you{ display:none; }
+    .field-grid{ grid-template-columns:1fr; }
   }
 
   .panel{
